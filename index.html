@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="style.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+	<link href="https://fonts.googleapis.com/css?family=Lato:400,400i,700,900&display=swap" rel="stylesheet">
+	<title>Search List</title>
+</head>
+<body>
+<header>
+<h1>Search List</h1>
+</header>
+<span id="count"></span>
+<search>
+	<input id="search_field" type="text" name="search_form" />
+	<button id="search" onclick="onSearch()"><li class="fa fa-search"></li></button>
+</search>
+<main id='main'></main>
+<script type="text/javascript">
+
+var page = 0
+var element = null;
+var loadState = 0;
+var fetchDone = 0;
+var reTime = 0;
+var urlParams = new URLSearchParams(window.location.search);
+var query = urlParams.get('query');
+var main = document.getElementById('main');
+var timeIn = null
+
+function onSearch() {
+	element = document.getElementById('search_field').value;
+	loadState = 1;
+	window.location.href = `?query=${element}`;
+}
+
+if(query !== null) {
+	element = query;
+	LoadList()
+	loadState = 1;
+	fetchAPI()
+}
+
+function refreshData() {
+	if(element !== null) {
+		page = 0;
+		fetchDone = 0;
+		loadState = 1;
+		LoadList()
+		fetchAPI(element);
+	}
+}
+
+function LoadList() {
+	main.innerHTML = '<span class="loading">Loading...</span>'
+}
+
+function fetchAPI() {
+	page = page + 1
+	fetch(`https://newsapi.org/v2/everything?q=${element}&apiKey=363d26dd3d664d199ca63adc371e22aa&pageSize=10&page=${page}`)
+	// fetch(`http://localhost:3004/static/sample.json`)
+	.then(function(res) {
+		return res.json()
+	})
+	.catch(function(err) {
+		fetchDone = 1
+		return 'no data'
+	})
+	.then(function(res) {
+		var main = document.getElementById('main')
+		if(loadState) {
+			main.innerHTML =  res.articles.map(function(value, index) {
+				return renderCards(value, index)
+			}).join('')
+			loadState = 0
+			countTime()
+		}
+		else {	
+			main.innerHTML +=  res.articles.map(function(value, index) {
+				return renderCards(value, index)
+			}).join('')
+		}
+
+	})
+	.catch(function(err) {
+		fetchDone = 1
+		return 'no data'
+	})
+}
+
+function countTime() {
+	var timeLeft = 30;
+		var elem = document.getElementById('count');
+		var timerId = setInterval(countdown, 1000);
+
+		function countdown() {
+		    if (timeLeft == -1) {
+		        clearTimeout(timerId);
+		        timeLeft = 30;
+		        refreshData();
+		    }
+		    else {
+		        elem.innerHTML = 'Auto refresh in ' + timeLeft + ' seconds';
+		        timeLeft--;
+		    }
+		}
+}
+
+function renderCards(value, index) {
+	return `<div class="card" id=${'card_' + index}>
+	<div class="thumbnail"><img src=${value.urlToImage} /></div>
+	<a href=${value.url} target="_blank">
+	<div class="card_inner">
+	<div class="title"><a href=${value.url} target="_blank">${value.title}</a></div>
+	<div class="author">${value.author}</div>
+	<div class="description">${value.description}</div>
+	<div class="content">${value.content}</div>
+	</div>
+	</a>
+	</div>`
+}
+
+window.onscroll = function(ev) {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight && !fetchDone) {
+		fetchAPI();
+    }
+}
+
+</script>
+</body>
+</html>

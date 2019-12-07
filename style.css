@@ -1,0 +1,155 @@
+@keyframes fadeIn {
+   0% {opacity: 0;}
+   100% {opacity: 1;}
+} 
+
+body {
+	margin:0;
+	padding: 0;
+	overflow-x: hidden;
+	font-family: Lato;
+}
+
+h1 {
+	font-weight: 400;
+	font-size: 26px;
+	text-align: center;
+}
+
+.loading {
+	text-align: center;
+}
+
+#count {
+	font-size:11px;
+	color:#666;
+	right:20px;
+	margin-top:-15px;
+	animation: fadeIn .5s;
+	position: absolute;
+}
+
+search {
+	display: flex;
+	background: #efc;
+	align-items: center;
+	justify-content: center;
+	padding: 1em;
+	flex:4;
+	width: 100%;
+	height: 100%;
+}
+
+#search_field {
+	padding: 15px;
+	width:50%;
+	font-size:14px;
+	border: none;
+	box-shadow: 0 0 0 1px #eee;
+	border-radius: 3px;
+	transition: .25s ease-in-out;
+}
+
+#search_field:hover,
+#search_field:focus {
+	outline: 0;
+	border: none;
+	box-shadow: 0 0 0 1px #77cc99;
+}
+
+button {
+	padding: 15px 25px;
+	outline: 0;
+	font-size:14px;
+	border:0;
+	background: #99dd66;
+	color:#fff;
+	cursor: pointer;
+	border-radius: 3px;
+	box-shadow: 0 0 0 1px #99dd66;
+	transition: .25s ease-in-out;
+}
+
+button:hover,
+button:focus {
+	background: #88cc55;
+}
+
+#main {
+	display: flex;
+	flex-flow: column;
+	flex-wrap: wrap;
+	flex:6;
+}
+
+.card {
+	box-shadow: 0 2px 4px #ccc;
+	padding:1.5em;
+	margin:1em;
+	display: flex;
+	flex:6;
+	border-radius: 3px;
+	transition: .15s ease-in-out;
+	animation: fadeIn .5s;
+}
+
+.card:hover {
+	box-shadow: 0 5px 12px #ccc;
+}
+
+.card_inner {
+	flex:4;
+}
+
+.title a {
+	font-size:22px;
+	color:#228800;
+	text-decoration: none;
+	transition: .15s ease-in-out;
+}
+
+.title a:hover {
+	color:#000;
+}
+
+.description,
+.content {
+	color:#555;
+	font-size:14px;
+	margin:.5em 0;
+}
+
+.author {
+	background: #efd;
+	display: inline-block;
+	margin:.5em 0;
+	border-radius: 3px;
+	padding:3px 5px;
+	color:#666;
+	font-size:12px;
+	font-weight: 700;
+}
+
+
+.card img {
+	width: 150px;
+	height: 150px;
+	object-fit: cover;
+	margin-right: 1em;
+	border-radius: 3px;
+}
+
+@media screen and (max-width:1024px) {
+	#main {
+		flex-flow: row;
+		flex-wrap: wrap;
+		flex:6;
+	}
+	.card {
+		flex-flow: column;
+		flex:1;
+	}
+	.card img {
+		width: 300px;
+	}
+}
