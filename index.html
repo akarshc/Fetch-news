@@ -13,34 +13,63 @@
 </header>
 <span id="count"></span>
 <search>
-	<input id="search_field" type="text" name="search_form" />
-	<button id="search" onclick="onSearch()"><li class="fa fa-search"></li></button>
+	<li class="fa fa-search"></li>
+	<input id="search_field" type="text" name="search_form" placeholder="Type here to search..." />
+	<button id="search" onclick="onSearch()">Search</button>
 </search>
 <main id='main'></main>
+<div id='load'></div>
 <script type="text/javascript">
 
 var page = 0
 var element = null;
 var loadState = 0;
 var fetchDone = 0;
-var reTime = 0;
 var urlParams = new URLSearchParams(window.location.search);
 var query = urlParams.get('query');
 var main = document.getElementById('main');
-var timeIn = null
+var load = document.getElementById('load');
+var search_field = document.getElementById("search_field");
+var images = document.getElementsByTagName("img");
+
+search_field.addEventListener("keydown", function (e) {
+    if (e.keyCode === 13) {
+        onSearch(e);
+    }
+});
+
+for (let image of images) {
+  image.addEventListener("load", fadeImg);
+  image.style.opacity = "0";
+}
+
+function fadeImg() {
+  this.style.transition = "opacity 2s";
+  this.style.opacity = "1";
+}
 
 function onSearch() {
-	element = document.getElementById('search_field').value;
+	element = search_field.value;
+	main.innerHTML = ''
 	loadState = 1;
-	window.location.href = `?query=${element}`;
+	LoadList()
+	history.pushState(`Search result of ${element}`, element, `?query=${element}`)
+	fetchAPI()
 }
 
 if(query !== null) {
 	element = query;
+	search_field.defaultValue = element;
 	LoadList()
 	loadState = 1;
 	fetchAPI()
 }
+
+else {
+	element = 'google';
+	refreshData()
+}
+
 
 function refreshData() {
 	if(element !== null) {
@@ -53,13 +82,12 @@ function refreshData() {
 }
 
 function LoadList() {
-	main.innerHTML = '<span class="loading">Loading...</span>'
+	load.innerHTML = '<div class="loading_outer"><span class="loading"></span></div>'
 }
 
 function fetchAPI() {
 	page = page + 1
 	fetch(`https://newsapi.org/v2/everything?q=${element}&apiKey=363d26dd3d664d199ca63adc371e22aa&pageSize=10&page=${page}`)
-	// fetch(`http://localhost:3004/static/sample.json`)
 	.then(function(res) {
 		return res.json()
 	})
@@ -68,7 +96,6 @@ function fetchAPI() {
 		return 'no data'
 	})
 	.then(function(res) {
-		var main = document.getElementById('main')
 		if(loadState) {
 			main.innerHTML =  res.articles.map(function(value, index) {
 				return renderCards(value, index)
@@ -76,7 +103,7 @@ function fetchAPI() {
 			loadState = 0
 			countTime()
 		}
-		else {	
+		else {
 			main.innerHTML +=  res.articles.map(function(value, index) {
 				return renderCards(value, index)
 			}).join('')
@@ -101,6 +128,7 @@ function countTime() {
 		        refreshData();
 		    }
 		    else {
+		    	elem.className += " " + "count";
 		        elem.innerHTML = 'Auto refresh in ' + timeLeft + ' seconds';
 		        timeLeft--;
 		    }
@@ -108,17 +136,59 @@ function countTime() {
 }
 
 function renderCards(value, index) {
-	return `<div class="card" id=${'card_' + index}>
-	<div class="thumbnail"><img src=${value.urlToImage} /></div>
-	<a href=${value.url} target="_blank">
+	return `<div class="card" id=${getId(index)} onload="">
+	${checkImage(value.urlToImage)}
 	<div class="card_inner">
 	<div class="title"><a href=${value.url} target="_blank">${value.title}</a></div>
-	<div class="author">${value.author}</div>
-	<div class="description">${value.description}</div>
+	${checkAuthor(value.author)}
 	<div class="content">${value.content}</div>
+	<a href=${value.url} target="_blank" class="read_more">Learn More</a>
 	</div>
-	</a>
 	</div>`
+}
+
+
+function getId (index) {
+	for(i=0; i<=page; i++) {
+		j = page * 10 - 10
+		return 'card_' + parseInt(index + j)
+	}
+}
+
+function checkImage (imgurl) {
+	var img = document.createElement('img');
+	img.src = imgurl;
+	var load = 0
+	var error = 0
+
+	img.load = function() {
+		load = 1
+	};
+
+	img.onerror = function() {
+		error = 1
+	};
+
+	img.load()
+
+	if(load && imgurl !== null) {
+		return `<div class="thumbnail"><img src=${img.src} /></div>`;
+	}
+	else if(imgurl === null || error) {
+		return ''
+	}
+	else {
+		return `<div class="thumbnail"><div class="img_load"><span class="loading"></span><img src=${img.src} /></div></div>`
+	}
+}
+
+function checkAuthor (author) {
+	if(author !== null) {
+		return `<div class="author">${author}</div>`;
+	}
+	else {
+		return ''
+	}
 }
 
 window.onscroll = function(ev) {
